@@ -1,0 +1,1007 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>果园大作战</title>
+
+    <style>
+        *{box-sizing:border-box}
+        body{margin:0;font-family:"Microsoft YaHei","PingFang SC",sans-serif;color:#36563b;background:#bfe8f5;overflow:hidden}
+        .page{
+            display:none;
+            height:100vh;
+            padding:14px 16px 76px;
+            position:relative;
+            overflow:hidden;
+
+            background-image:url("home.png");
+            background-size:cover;
+            background-position:center;
+            background-repeat:no-repeat;
+        }
+        .page.active{display:flex;justify-content:center;align-items:center}
+        .screen{width:min(100%,980px);height:calc(100vh - 92px);position:relative;z-index:2;padding:12px;display:flex;flex-direction:column;justify-content:center}
+        .mobile-narrow{max-width:430px}
+        .logo{margin:0 auto 12px;width:min(82%,360px);padding:16px 12px;background:#b9824b;border-radius:22px;box-shadow:0 7px 0 #8a5e36;color:#fff4d7;font-size:clamp(42px,7vw,58px);font-weight:900;text-align:center;line-height:1.1}
+        .logo-img{
+            width:min(150%,900px);
+            max-width:760px;
+            display:block;
+            margin:0 auto 24px;
+            object-fit:contain;
+
+            position:relative;
+            right:90px;
+        }
+        .sub{text-align:center;color:#476a4d;font-weight:800;font-size:clamp(18px,3vw,22px);line-height:1.35;margin-bottom:12px}
+        .name-box{width:min(84%,340px);margin:0 auto 10px;background:rgba(255,248,232,.94);border-radius:18px;padding:12px;box-shadow:0 6px 16px rgba(79,110,62,.16)}
+        .name-box label{display:block;font-weight:900;margin-bottom:8px;color:#4f6b4e;font-size:16px}
+        .name-box input{width:100%;height:42px;border:2px solid #d8c9a6;border-radius:14px;padding:0 12px;font-size:18px;color:#36563b;background:white;outline:none}
+        .wood-title{margin:0 auto 14px;width:fit-content;max-width:92%;padding:10px 26px;background:#b9824b;color:#fff4d7;border-radius:18px;box-shadow:0 6px 0 #8a5e36;font-size:clamp(28px,4vw,38px);font-weight:900;text-align:center}
+        .hello{text-align:center;font-size:clamp(18px,3vw,23px);font-weight:900;color:#4f8b61;margin:0 0 12px}
+        .btn{display:block;width:min(250px,76%);min-height:52px;margin:10px auto;border:0;border-radius:999px;background:#6faf76;color:white;font-size:clamp(22px,3vw,26px);font-weight:900;box-shadow:0 6px 0 #4d8555;cursor:pointer}
+        .btn.light{background:#fff3da;color:#6a5737;box-shadow:0 6px 0 #d6bf91}
+        .back{position:absolute;top:16px;left:16px;width:48px;height:48px;border-radius:50%;border:0;background:#c58b4d;color:white;font-size:28px;font-weight:900;box-shadow:0 4px 0 #8a5e36;cursor:pointer;z-index:4}
+        .mode-list,.level-list{display:grid;gap:12px;width:min(100%,860px);margin:0 auto}
+        .mode-card,.level-card{background:rgba(255,250,231,.94);border-radius:22px;padding:12px;display:flex;align-items:center;box-shadow:0 6px 16px rgba(79,110,62,.16);border:3px solid rgba(255,255,255,.78);cursor:pointer}
+        .pic{width:74px;height:74px;border-radius:18px;background:#d7efd1;display:flex;align-items:center;justify-content:center;font-size:40px;margin-right:12px;flex-shrink:0}
+        .card-text{text-align:left}
+        .card-text h3{margin:0 0 5px;font-size:clamp(22px,3vw,29px);color:#3d6b43}
+        .card-text p{margin:0;color:#6d765f;line-height:1.35;font-size:clamp(14px,2vw,18px)}
+        .arrow{margin-left:auto;font-size:30px;color:#c58b4d}
+        .level-card{justify-content:space-between}
+        .level-info h3{margin:0 0 5px;font-size:clamp(24px,3vw,31px)}
+        .level-info p{margin:0;color:#6d765f;font-size:clamp(15px,2vw,19px)}
+        .stars{color:#e6a735;font-size:clamp(24px,3vw,31px)}
+        .game-panel{width:min(100%,980px)}
+        .top-bar{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px}
+        .badge{background:#fff8e8;padding:8px 15px;border-radius:999px;color:#5f795f;font-size:clamp(16px,2vw,21px);font-weight:900;box-shadow:0 4px 0 #d8c9a6}
+        .progress{height:12px;background:#d4e2d4;border-radius:999px;overflow:hidden;margin-bottom:10px}
+        .progress-inner{height:100%;width:0%;background:#78b88b;transition:.3s}
+        .game-area{height:38vh;min-height:260px;border-radius:26px;overflow:hidden;display:flex;position:relative;background:radial-gradient(circle at 50% 90%,rgba(255,255,255,.5),transparent 26%),linear-gradient(#bfe9f4 0%,#e8f8f5 48%,#cde7be 49%,#b4d99d 100%)}
+        .side{flex:1;position:relative;cursor:pointer}
+        .side.active{background:rgba(255,255,255,.35)}
+        .side+.side{border-left:3px dashed rgba(75,120,80,.25)}
+        .tree{position:absolute;bottom:30px;left:50%;transform:translateX(-50%);width:clamp(125px,18vw,175px);height:clamp(170px,23vw,210px)}
+        .crown{width:100%;height:66%;border-radius:48% 52% 45% 55%;background:#78b88b;box-shadow:-22px 17px 0 #93c99a,22px 17px 0 #68a87b,0 34px 0 #82bd8a}
+        .trunk{width:30px;height:95px;background:#9b7149;border-radius:18px;margin:-24px auto 0}
+        .fruit{width:clamp(68px,10vw,82px);height:clamp(68px,10vw,82px);border-radius:50%;background:radial-gradient(circle at 30% 25%,#ffd4c9,#e96f5c 70%);position:absolute;top:42%;display:flex;justify-content:center;align-items:center;color:white;font-size:30px;font-weight:900;box-shadow:0 12px 24px rgba(180,70,60,.25);animation:pulse 1.3s infinite;z-index:3}
+        .fruit.green{background:radial-gradient(circle at 30% 25%,#e4ffd8,#6fcf6a 70%);box-shadow:0 12px 24px rgba(80,160,80,.25)}
+        .fruit::before{content:"";position:absolute;top:-6px;right:20px;width:18px;height:11px;border-radius:50%;background:#4f8b61;transform:rotate(-25deg)}
+        .fruit.left{left:25%;transform:translateX(-50%)}
+        .fruit.right{right:25%;transform:translateX(50%)}
+        @keyframes pulse{0%,100%{scale:1}50%{scale:1.08}}
+        .instruction{margin-top:10px;padding:9px 15px;background:rgba(255,248,232,.94);border-radius:999px;font-size:clamp(22px,3vw,29px);font-weight:900;text-align:center}
+        .big{font-size:clamp(32px,4vw,40px);color:#4f8b61}
+        .feedback{position:absolute;top:16px;left:50%;transform:translateX(-50%);background:rgba(255,248,232,.96);border-radius:999px;padding:10px 24px;font-size:clamp(22px,3vw,27px);font-weight:900;opacity:0;transition:.2s;z-index:5}
+        .feedback.show{opacity:1}
+        .rule-popup{display:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:10;background:rgba(255,248,232,.98);color:#3d6b43;padding:22px 30px;border-radius:24px;font-size:clamp(24px,4vw,34px);font-weight:900;text-align:center;box-shadow:0 10px 30px rgba(70,100,60,.25);border:4px solid rgba(255,255,255,.9)}
+        .rule-popup.show{display:block}
+        .stats,.result-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:9px}
+        .stat,.result{border-radius:18px;background:rgba(255,255,255,.78);padding:10px;text-align:center}
+        .num{font-size:clamp(24px,3vw,29px);font-weight:900}
+        .label{color:#708070;margin-top:3px;font-size:14px}
+        .report-card,.record-card{width:min(100%,850px);margin:0 auto;background:rgba(255,250,231,.94);border-radius:26px;padding:14px;box-shadow:0 10px 22px rgba(79,110,62,.18)}
+        .suggestion{margin-top:12px;padding:14px;border-radius:18px;background:#fff8e8;font-size:clamp(17px,2vw,21px);line-height:1.45}
+        .ai-title{margin-top:12px;font-size:clamp(18px,2vw,22px);font-weight:900;color:#4f8b61;text-align:center}.ai-comment{background:#fff8e8;border:2px dashed rgba(111,175,118,.55)}
+        .total-count{width:min(84%,340px);margin:0 auto 8px;padding:8px 12px;background:rgba(255,248,232,.82);border-radius:999px;color:#4f8b61;font-size:16px;font-weight:900;text-align:center;box-shadow:0 4px 12px rgba(79,110,62,.12)}
+        @media print{body{overflow:visible;background:#fff}.page{display:none!important}.page.active{display:flex!important;height:auto;min-height:100vh;background:#fff}.back,.btn,.bottom-deco{display:none!important}.screen{height:auto}.report-card{box-shadow:none;border:2px solid #d8c9a6}}
+        .record-list{display:grid;gap:9px;max-height:50vh;overflow:auto;padding-right:4px}
+        #records{
+            #report{
+                overflow:hidden !important;
+            }
+
+            #report .screen{
+                height:calc(100vh - 40px);
+                justify-content:flex-start;
+                overflow-y:auto;
+                padding-top:50px;
+                padding-bottom:140px;
+            }
+            overflow:hidden !important;
+        }
+
+        #records .screen{
+            height:calc(100vh - 40px);
+            justify-content:flex-start;
+            overflow-y:auto;
+            padding-top:70px;
+            padding-bottom:140px;
+        }
+        .record-item{background:#fff8e8;border-radius:18px;padding:12px;font-size:clamp(16px,2vw,19px);line-height:1.45}
+        .empty{font-size:22px;text-align:center;color:#6d765f;padding:30px}
+
+        .analysis-card{margin-top:12px}
+        .analysis-title{text-align:center;color:#4f8b61;font-size:clamp(20px,3vw,26px);font-weight:900;margin:4px 0 10px}
+        .chart-grid{display:grid;grid-template-columns:1fr;gap:12px}
+        .chart-box{background:#fff8e8;border-radius:20px;padding:12px;box-shadow:inset 0 0 0 2px rgba(216,201,166,.45)}
+        .chart-box h3{margin:0 0 8px;text-align:center;color:#3d6b43;font-size:clamp(17px,2vw,21px)}
+        .chart-box canvas{width:100%;height:190px;display:block;background:rgba(255,255,255,.56);border-radius:16px}
+        .analysis-note{margin-top:10px;padding:12px;border-radius:18px;background:#fff8e8;color:#4f6b4e;font-size:clamp(15px,2vw,18px);line-height:1.45}
+        @media(min-width:760px){.chart-grid{grid-template-columns:repeat(2,1fr)}.chart-box.wide{grid-column:1 / -1}.chart-box canvas{height:210px}}
+        .bottom-deco{position:absolute;left:0;right:0;bottom:0;height:66px;z-index:1;pointer-events:none}
+        .grass{position:absolute;bottom:0;width:100%;height:50px;background:radial-gradient(ellipse at 10% 100%,#6fa85f 0 35%,transparent 36%),radial-gradient(ellipse at 28% 100%,#7dbd6b 0 38%,transparent 39%),radial-gradient(ellipse at 48% 100%,#6da85e 0 34%,transparent 35%),radial-gradient(ellipse at 70% 100%,#83c270 0 39%,transparent 40%),radial-gradient(ellipse at 92% 100%,#6fa85f 0 36%,transparent 37%)}
+        .flower,.leaf,.mushroom{position:absolute;bottom:38px;font-size:22px;animation:floaty 3s ease-in-out infinite}
+        .f1{left:8%}.f2{left:22%;animation-delay:.4s}.f3{left:74%;animation-delay:.8s}.f4{left:88%;animation-delay:1.2s}
+        @keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+        @media(max-width:700px){.page{padding:10px 12px 70px}.screen{height:calc(100vh - 80px);padding:8px;justify-content:center}.logo{font-size:40px;width:72%;padding:14px 10px;margin:0 auto 10px;border-radius:20px}.sub{font-size:18px;line-height:1.3;margin-bottom:10px}.name-box{width:80%;padding:10px;margin-bottom:8px}.name-box label{font-size:15px}.name-box input{height:38px;font-size:16px}.btn{width:74%;min-height:48px;font-size:22px;margin:8px auto}.wood-title{font-size:28px;margin-bottom:12px;padding:9px 24px}.hello{font-size:18px;margin-bottom:10px}.back{width:44px;height:44px;font-size:26px;top:12px;left:12px}.mode-list,.level-list{gap:9px}.mode-card,.level-card{padding:9px;border-radius:19px}.pic{width:62px;height:62px;font-size:34px;margin-right:10px}.card-text h3{font-size:22px}.card-text p{font-size:14px}.level-info h3{font-size:22px}.level-info p{font-size:14px}.stars{font-size:22px}.top-bar{flex-direction:row;flex-wrap:wrap;justify-content:center}.badge{font-size:15px;padding:7px 12px}.game-area{height:34vh;min-height:230px;border-radius:22px}.tree{width:118px;height:165px}.trunk{height:80px}.fruit.left{left:50%}.fruit.right{right:50%}.instruction{font-size:21px;padding:8px 12px}.big{font-size:31px}.stats,.result-grid{grid-template-columns:repeat(3,1fr);gap:7px}.stat,.result{padding:8px;border-radius:15px}.num{font-size:20px}.label{font-size:12px}.report-card,.record-card{padding:10px}.suggestion{font-size:15px;padding:10px}.record-list{max-height:46vh}.bottom-deco{height:58px}.grass{height:42px}.flower,.leaf,.mushroom{bottom:32px;font-size:20px}}
+        @media(min-width:900px){.mode-list,.level-list{grid-template-columns:repeat(3,1fr)}.mode-card,.level-card{min-height:180px;flex-direction:column;justify-content:center;text-align:center}.pic{margin:0 0 10px}.card-text,.level-info{text-align:center}.arrow{display:none}}
+    </style>
+</head>
+
+<body>
+
+<section id="home" class="page active">
+    <div class="screen mobile-narrow">
+        <img src="logo.png" class="logo-img">
+        <div class="name-box">
+            <label for="nameInput">你希望我们怎么称呼你？</label>
+            <input id="nameInput" type="text" placeholder="例如：小明 / 小朋友" maxlength="12">
+        </div>
+        <button class="btn" onclick="startWithName()">开始训练 🍃</button>
+        <button class="btn light" onclick="openRecords()">训练记录 📋</button>
+    </div>
+</section>
+
+<section id="mode" class="page">
+    <button class="back" onclick="safeBack('home')">←</button>
+    <div class="screen">
+        <div class="wood-title">选择训练关卡</div>
+        <div class="hello">你好，<span class="username">小朋友</span>！今天想练哪一项？</div>
+        <div class="mode-list">
+            <div class="mode-card" onclick="selectMode('专注采摘')"><div class="pic">🐿️</div><div class="card-text"><h3>专注采摘</h3><p>根据果子位置，选择左右方向。</p></div><div class="arrow">›</div></div>
+            <div class="mode-card" onclick="selectMode('平衡果园')"><div class="pic">🦌</div><div class="card-text"><h3>平衡果园</h3><p>通过身体移动，保持平衡采摘。</p></div><div class="arrow">›</div></div>
+            <div class="mode-card" onclick="selectMode('听音行动')"><div class="pic">🐤</div><div class="card-text"><h3>听音行动</h3><p>根据语音提示，完成方向判断。</p></div><div class="arrow">›</div></div>
+        </div>
+    </div>
+    <BottomDeco></BottomDeco>
+</section>
+
+<section id="level" class="page">
+    <button class="back" onclick="safeBack('mode')">←</button>
+    <div class="screen">
+        <div class="wood-title">选择难度</div>
+        <div class="hello"><span class="username">小朋友</span>，请选择适合自己的等级</div>
+        <div class="level-list">
+            <div class="level-card" onclick="startGame('初级')"><div class="level-info"><h3>初级</h3><p>节奏较慢，适合初次体验。</p></div><div class="stars">⭐☆☆</div></div>
+            <div class="level-card" onclick="startGame('中级')"><div class="level-info"><h3>中级</h3><p>目标切换更快，提升反应能力。</p></div><div class="stars">⭐⭐☆</div></div>
+            <div class="level-card" onclick="startGame('高级')"><div class="level-info"><h3>高级</h3><p>限时挑战，考验快速反应。</p></div><div class="stars">⭐⭐⭐</div></div>
+        </div>
+    </div>
+    <BottomDeco></BottomDeco>
+</section>
+
+<section id="game" class="page">
+    <button class="back" onclick="safeBack('mode')">←</button>
+    <div class="screen game-panel">
+        <div class="top-bar">
+            <div class="badge" id="gameMode">专注采摘</div>
+            <div class="badge">第 <span id="round">1</span> / 10 轮</div>
+            <div class="badge">⏱ <span id="timeLimit">6</span>s</div>
+        </div>
+        <div class="progress"><div id="progress" class="progress-inner"></div></div>
+        <div class="game-area">
+            <div id="left" class="side" onclick="answer('left')"><div class="tree"><div class="crown"></div><div class="trunk"></div></div></div>
+            <div id="right" class="side" onclick="answer('right')"><div class="tree"><div class="crown"></div><div class="trunk"></div></div></div>
+            <div id="fruit" class="fruit left">●</div>
+            <div id="feedback" class="feedback">摘取成功</div>
+            <div id="rulePopup" class="rule-popup">请不要采摘绿苹果！</div>
+        </div>
+        <div id="instruction" class="instruction">请移动到 <span id="targetText" class="big">左</span> 侧采摘果子</div>
+        <div class="stats">
+            <div class="stat"><div id="correct" class="num">0</div><div class="label">正确次数</div></div>
+            <div class="stat"><div id="wrong" class="num">0</div><div class="label">错误次数</div></div>
+            <div class="stat"><div id="avg" class="num">--</div><div class="label">平均反应</div></div>
+        </div>
+    </div>
+    <BottomDeco></BottomDeco>
+</section>
+
+<section id="report" class="page">
+    <div class="screen">
+        <div class="wood-title">训练结束</div>
+        <div class="hello"><span class="username">小朋友</span>，这是你的训练结果</div>
+        <div class="report-card">
+            <div class="result-grid">
+                <div class="result"><div class="label">训练者</div><div id="rName" class="num">小朋友</div></div>
+                <div class="result"><div class="label">训练模式</div><div id="rMode" class="num">-</div></div>
+                <div class="result"><div class="label">难度</div><div id="rLevel" class="num">-</div></div>
+                <div class="result"><div class="label">训练等级</div><div id="rGrade" class="num">-</div></div>
+                <div class="result"><div class="label">正确率</div><div id="rAcc" class="num">0%</div></div>
+                <div class="result"><div class="label">平均反应</div><div id="rAvg" class="num">0ms</div></div>
+                <div class="result"><div class="label">训练时长</div><div id="rTime" class="num">0s</div></div>
+                <div class="result"><div class="label">左侧错误</div><div id="rLeft" class="num">0</div></div>
+                <div class="result"><div class="label">右侧错误</div><div id="rRight" class="num">0</div></div>
+            </div>
+            <div class="ai-title">AI智能评价</div>
+            <div id="suggestion" class="suggestion ai-comment"></div>
+        </div>
+        <button class="btn" onclick="startGame(currentLevel)">再来一次</button>
+        <button class="btn light" onclick="exportSingleReport()">导出报告</button>
+        <button class="btn light" onclick="safeBack('mode')">返回选关</button>
+        <button class="btn light" onclick="safeBack('home')">返回首页</button>
+    </div>
+    <BottomDeco></BottomDeco>
+</section>
+
+<section id="records" class="page">
+    <button class="back" onclick="safeBack('home')">←</button>
+    <div class="screen">
+        <div class="wood-title">训练记录</div>
+        <div class="record-card">
+            <div class="result-grid" style="margin-bottom:12px">
+                <div class="result"><div class="label">累计训练次数</div><div id="recordTotal" class="num">0次</div></div>
+                <div class="result"><div class="label">平均正确率</div><div id="recordAvgAcc" class="num">0%</div></div>
+                <div class="result"><div class="label">最高正确率</div><div id="recordBestAcc" class="num">0%</div></div>
+                <div class="result"><div class="label">最快反应</div><div id="recordBestRt" class="num">--</div></div>
+                <div class="result"><div class="label">最近训练等级</div><div id="recordLastGrade" class="num">--</div></div>
+                <div class="result"><div class="label">最近训练时长</div><div id="recordLastTime" class="num">--</div></div>
+            </div>
+            <div id="recordList" class="record-list"></div>
+        </div>
+
+        <div class="record-card analysis-card">
+            <div class="analysis-title">📊 训练成长分析</div>
+            <div class="chart-grid">
+                <div class="chart-box wide">
+                    <h3>正确率变化趋势</h3>
+                    <canvas id="accChart" width="800" height="260"></canvas>
+                </div>
+                <div class="chart-box">
+                    <h3>平均反应时间趋势</h3>
+                    <canvas id="rtChart" width="800" height="260"></canvas>
+                </div>
+                <div class="chart-box">
+                    <h3>左右错误分布</h3>
+                    <canvas id="errorChart" width="800" height="260"></canvas>
+                </div>
+            </div>
+            <div id="analysisNote" class="analysis-note">完成训练后，这里会自动生成成长趋势分析。</div>
+        </div>
+
+        <button class="btn" onclick="exportDocArchive()">导出数据档案 📄</button>
+        <button class="btn light" onclick="clearRecords()">清空记录</button>
+    </div>
+    <BottomDeco></BottomDeco>
+</section>
+
+<script>
+    document.querySelectorAll("BottomDeco").forEach(el=>{
+        el.outerHTML='<div class="bottom-deco"><div class="grass"></div><div class="flower f1">🌼</div><div class="leaf f2">🍃</div><div class="mushroom f3">🍄</div><div class="flower f4">🌸</div></div>';
+    });
+
+    let userName="小朋友",currentMode="专注采摘",currentLevel="初级",limitTime=6000;
+    let round=1,total=10,target="left",correct=0,wrong=0,leftWrong=0,rightWrong=0;
+    let times=[],startTime=0,trainingStart=0,canClick=true,timer=null,playing=false,fruitType="red",streak=0;
+
+    function stopTraining(){
+        clearTimeout(timer);
+        timer=null;
+        canClick=false;
+        playing=false;
+        rulePopup.classList.remove("show");
+        if("speechSynthesis" in window) speechSynthesis.cancel();
+    }
+
+    function safeBack(id){
+        stopTraining();
+        showPage(id);
+    }
+
+    function startWithName(){
+        const input=document.getElementById("nameInput").value.trim();
+        userName=input||"小朋友";
+        updateUserName();
+        showPage("mode");
+    }
+
+    function updateUserName(){
+        document.querySelectorAll(".username").forEach(el=>el.innerText=userName);
+    }
+
+    function showPage(id){
+        document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+        document.getElementById(id).classList.add("active");
+    }
+
+    function selectMode(mode){
+        currentMode=mode;
+        showPage("level");
+    }
+
+    function getLevelTime(level){
+        if(level==="初级") return 6000;
+        if(level==="中级") return 4000;
+
+        if(level==="高级"){
+            if(currentMode==="专注采摘") return 2000;
+            if(currentMode==="听音行动") return 2000;
+            return 3000;
+        }
+
+        return 6000;
+    }
+
+    function startGame(level){
+        stopTraining();
+
+        currentLevel=level;
+        limitTime=getLevelTime(level);
+
+        round=1;correct=0;wrong=0;leftWrong=0;rightWrong=0;times=[];streak=0;
+        trainingStart=Date.now();
+        canClick=false;playing=true;fruitType="red";
+
+        updateUserName();
+        gameMode.innerText=currentMode+" · "+currentLevel;
+        timeLimit.innerText=Math.round(limitTime/1000);
+        document.getElementById("round").innerText=1;
+        progress.style.width="0%";
+        correctEl().innerText=0;
+        wrongEl().innerText=0;
+        avg.innerText="--";
+        feedback.classList.remove("show");
+        fruit.className="fruit left red";
+
+        if(currentMode==="听音行动"){
+            instruction.style.display="none";
+            left.classList.remove("active");
+            right.classList.remove("active");
+        }else{
+            instruction.style.display="block";
+        }
+
+        showPage("game");
+
+        if(currentMode==="专注采摘" && currentLevel==="高级"){
+            rulePopup.classList.add("show");
+            speak("绿苹果出现时请不要选择！");
+            timer=setTimeout(()=>{
+                rulePopup.classList.remove("show");
+                if(playing) nextRound();
+            },5000);
+        }else{
+            speak(userName+"，一起来摘水果");
+            timer=setTimeout(()=>{
+                if(playing) nextRound();
+            },3000);
+        }
+    }
+
+    function nextRound(){
+        clearTimeout(timer);
+        if(!playing)return;
+
+        if(round>total){
+            showReport();
+            return;
+        }
+
+        canClick=true;
+        target=Math.random()>.5?"left":"right";
+
+        const allowGreenApple=currentMode.trim()==="专注采摘" && currentLevel.trim()==="高级";
+
+        if(allowGreenApple){
+            fruitType=Math.random()<0.35?"green":"red";
+        }else{
+            fruitType="red";
+        }
+
+        fruit.className="fruit "+target+" "+fruitType;
+
+        if(currentMode==="听音行动"){
+            instruction.style.display="none";
+            targetText.innerText="";
+            left.classList.remove("active");
+            right.classList.remove("active");
+        }else{
+            instruction.style.display="block";
+            targetText.innerText=target==="left"?"左":"右";
+            left.classList.toggle("active",target==="left");
+            right.classList.toggle("active",target==="right");
+        }
+
+        document.getElementById("round").innerText=round;
+        progress.style.width=((round-1)/total)*100+"%";
+
+        if(currentMode==="听音行动"){
+            speak(target==="left"?"左":"右");
+        }
+
+        startTime=Date.now();
+        timer=setTimeout(()=>answer("timeout"),limitTime);
+    }
+
+    function answer(choice){
+        if(!canClick||!playing)return;
+        canClick=false;
+        clearTimeout(timer);
+
+        const rt=Date.now()-startTime;
+        times.push(rt);
+
+        if(fruitType==="green"){
+            if(choice==="timeout"){
+                correct++;
+                handleStreak(true);
+                feedbackMsg("成功避开！",true);
+            }else{
+                wrong++;
+                handleStreak(false);
+                if(target==="left")leftWrong++;
+                if(target==="right")rightWrong++;
+                feedbackMsg("绿色不能摘！",false);
+            }
+        }else if(choice===target){
+            correct++;
+            handleStreak(true);
+            feedbackMsg("摘取成功！",true);
+        }else{
+            wrong++;
+            handleStreak(false);
+            if(target==="left")leftWrong++;
+            if(target==="right")rightWrong++;
+            feedbackMsg(choice==="timeout"?"反应超时":"方向不匹配",false);
+        }
+
+        round++;
+        updateStats();
+
+        timer=setTimeout(()=>{
+            if(playing) nextRound();
+        },2000);
+    }
+
+    function handleStreak(success){
+        if(success){
+            streak++;
+            if(streak>0 && streak%3===0){
+                setTimeout(()=>speak("连续正确三次，真棒！"),650);
+            }
+        }else{
+            streak=0;
+        }
+    }
+
+    function feedbackMsg(text,success){
+        feedback.innerText=text;
+        feedback.style.color=success?"#4f8b61":"#c46a4a";
+        feedback.classList.add("show");
+
+        if(text==="成功避开！"){
+            speak("做得好，成功避开！");
+        }else if(text==="绿色不能摘！"){
+            speak("绿色苹果不可以采摘！");
+        }else{
+            speak(success?"太棒了！":"错了，再试一次！");
+        }
+
+        setTimeout(()=>feedback.classList.remove("show"),900);
+    }
+
+    function correctEl(){return document.getElementById("correct")}
+    function wrongEl(){return document.getElementById("wrong")}
+
+    function updateStats(){
+        correctEl().innerText=correct;
+        wrongEl().innerText=wrong;
+
+        if(times.length){
+            avg.innerText=Math.round(times.reduce((a,b)=>a+b,0)/times.length)+"ms";
+        }else{
+            avg.innerText="--";
+        }
+    }
+
+    function generateAIComment(acc, average, leftWrong, rightWrong){
+        let comments=[];
+
+        if(acc>=90){
+            comments.push("本次训练正确率较高，说明训练者能够较好地完成方向判断任务，可继续保持当前难度进行巩固训练。");
+        }else if(acc>=75){
+            comments.push("本次训练表现较稳定，但仍存在少量判断错误，建议继续进行短时多轮训练，提升反应稳定性。");
+        }else if(acc>=60){
+            comments.push("本次训练达到基础完成水平，建议暂时保持当前难度，并适当增加语音提示和示范次数。");
+        }else{
+            comments.push("本次训练正确率偏低，建议降低训练难度，延长反应时间，先帮助训练者建立任务规则理解。");
+        }
+
+        if(average>0 && average<=1500){
+            comments.push("平均反应速度较快，注意力集中状态较好。");
+        }else if(average<=3000){
+            comments.push("平均反应速度处于中等水平，可通过重复练习提升反应速度和任务保持能力。");
+        }else{
+            comments.push("平均反应时间较长，建议减少干扰项，并给予更清晰的视觉或语音提示。");
+        }
+
+        if(leftWrong>rightWrong){
+            comments.push("左侧目标错误次数相对较多，后续可适当增加左侧方向识别训练。");
+        }else if(rightWrong>leftWrong){
+            comments.push("右侧目标错误次数相对较多，后续可适当增加右侧方向识别训练。");
+        }else{
+            comments.push("左右方向错误分布较均衡，暂未发现明显单侧反应弱项。");
+        }
+
+        if(currentMode==="专注采摘" && currentLevel==="高级"){
+            comments.push("高级模式中的绿色苹果干扰项可用于观察训练者的选择性注意和抑制控制能力。");
+        }
+
+        return comments.join(" ");
+    }
+
+    function getTrainingGrade(acc){
+        if(acc>=90) return "优秀";
+        if(acc>=75) return "良好";
+        if(acc>=60) return "合格";
+        return "继续加油";
+    }
+
+    function showReport(){
+        stopTraining();
+
+        const average=times.length?Math.round(times.reduce((a,b)=>a+b,0)/times.length):0;
+        const acc=Math.round(correct/total*100);
+        const totalTime=Math.max(0,Math.round((Date.now()-trainingStart)/1000));
+        const grade=getTrainingGrade(acc);
+
+        rName.innerText=userName;
+        rMode.innerText=currentMode;
+        rLevel.innerText=currentLevel;
+        rGrade.innerText=grade;
+        rAcc.innerText=acc+"%";
+        rAvg.innerText=average+"ms";
+        rTime.innerText=totalTime+"s";
+        rLeft.innerText=leftWrong;
+        rRight.innerText=rightWrong;
+
+        const aiComment=generateAIComment(acc, average, leftWrong, rightWrong);
+        suggestion.innerText=aiComment;
+
+        saveRecord({
+            name:userName,
+            mode:currentMode,
+            level:currentLevel,
+            acc,
+            avg:average,
+            totalTime,
+            grade,
+            leftWrong,
+            rightWrong,
+            aiComment,
+            date:new Date().toLocaleString()
+        });
+
+        showPage("report");
+    }
+
+    function saveRecord(record){
+        const records=JSON.parse(localStorage.getItem("orchardRecords")||"[]");
+        records.unshift(record);
+        localStorage.setItem("orchardRecords",JSON.stringify(records.slice(0,20)));
+    }
+
+    function updateRecordDashboard(records){
+        const total=records.length;
+        const validAvgRecords=records.filter(r=>Number(r.avg)>0);
+        const avgAcc=total ? Math.round(records.reduce((sum,r)=>sum+Number(r.acc||0),0)/total) : 0;
+        const bestAcc=total ? Math.max(...records.map(r=>Number(r.acc||0))) : 0;
+        const bestRt=validAvgRecords.length ? Math.min(...validAvgRecords.map(r=>Number(r.avg))) : null;
+        const last=records[0]||{};
+
+        recordTotal.innerText=total+"次";
+        recordAvgAcc.innerText=avgAcc+"%";
+        recordBestAcc.innerText=bestAcc+"%";
+        recordBestRt.innerText=bestRt ? bestRt+"ms" : "--";
+        recordLastGrade.innerText=last.grade||"--";
+        recordLastTime.innerText=last.totalTime ? last.totalTime+"s" : "--";
+    }
+
+    function openRecords(){
+        stopTraining();
+
+        const input=document.getElementById("nameInput").value.trim();
+        if(input){
+            userName=input;
+            updateUserName();
+        }
+
+        const records=JSON.parse(localStorage.getItem("orchardRecords")||"[]");
+        updateRecordDashboard(records);
+
+        recordList.innerHTML=records.length
+            ? records.map(r=>`
+      <div class="record-item">
+        <b>${r.name}</b> · ${r.mode} · ${r.level}<br>
+        正确率：${r.acc}% ｜ 平均反应：${r.avg}ms ｜ 等级：${r.grade||"-"}<br>
+        训练时长：${r.totalTime||0}s ｜ 左错：${r.leftWrong} ｜ 右错：${r.rightWrong}<br>
+        ${r.aiComment ? `<span style="color:#4f8b61">AI评价：${r.aiComment}</span><br>` : ""}
+        <span style="color:#7a8a72">${r.date}</span>
+      </div>`).join("")
+            : '<div class="empty">还没有训练记录哦 🌱</div>';
+
+        drawCharts(records);
+        showPage("records");
+    }
+
+    function updateHomeCount(){
+        // 训练次数已经放在训练记录页，这里保留为空函数，避免旧版本调用时报错。
+    }
+
+    function getTrendText(values, positiveIsUp=true){
+        if(values.length<2) return "训练记录较少，完成多次训练后可观察成长趋势。";
+        const first=Number(values[0]||0);
+        const last=Number(values[values.length-1]||0);
+        if(first===last) return "近期数据整体较平稳，可继续保持短时多轮训练。";
+        const improved=positiveIsUp ? last>first : last<first;
+        return improved ? "从趋势看，训练表现呈改善方向发展，可继续保持当前训练节奏。" : "从趋势看，表现存在波动，建议降低难度或增加提示后再逐步提升。";
+    }
+
+    function drawLineChart(canvasId, labels, values, unit, title){
+        const canvas=document.getElementById(canvasId);
+        if(!canvas) return;
+        const ctx=canvas.getContext("2d");
+        const w=canvas.width, h=canvas.height;
+        ctx.clearRect(0,0,w,h);
+
+        ctx.fillStyle="#fffaf0";
+        ctx.fillRect(0,0,w,h);
+
+        if(!values.length){
+            ctx.fillStyle="#708070";
+            ctx.font="26px Microsoft YaHei";
+            ctx.textAlign="center";
+            ctx.fillText("暂无数据",w/2,h/2);
+            return;
+        }
+
+        const padding={left:62,right:28,top:30,bottom:54};
+        const chartW=w-padding.left-padding.right;
+        const chartH=h-padding.top-padding.bottom;
+        let max=Math.max(...values.map(Number));
+        let min=Math.min(...values.map(Number));
+
+        if(unit==="%" ){min=0;max=100;}
+        else if(max===min){max=max+100;min=Math.max(0,min-100);}
+        else{
+            const gap=(max-min)*0.16;
+            max=max+gap;
+            min=Math.max(0,min-gap);
+        }
+
+        ctx.strokeStyle="rgba(112,128,112,.35)";
+        ctx.lineWidth=2;
+        ctx.font="20px Microsoft YaHei";
+        ctx.fillStyle="#708070";
+        ctx.textAlign="right";
+
+        for(let i=0;i<=4;i++){
+            const y=padding.top+chartH*i/4;
+            const val=Math.round(max-(max-min)*i/4);
+            ctx.beginPath();
+            ctx.moveTo(padding.left,y);
+            ctx.lineTo(w-padding.right,y);
+            ctx.stroke();
+            ctx.fillText(val+unit,padding.left-10,y+7);
+        }
+
+        const points=values.map((v,i)=>{
+            const x=padding.left+(values.length===1?chartW/2:chartW*i/(values.length-1));
+            const y=padding.top+chartH-(Number(v)-min)/(max-min)*chartH;
+            return {x,y,v:Number(v)};
+        });
+
+        ctx.strokeStyle="#6faf76";
+        ctx.lineWidth=6;
+        ctx.lineJoin="round";
+        ctx.lineCap="round";
+        ctx.beginPath();
+        points.forEach((pt,i)=>{
+            if(i===0) ctx.moveTo(pt.x,pt.y);
+            else ctx.lineTo(pt.x,pt.y);
+        });
+        ctx.stroke();
+
+        points.forEach((pt,i)=>{
+            ctx.fillStyle="#fff3da";
+            ctx.beginPath();
+            ctx.arc(pt.x,pt.y,9,0,Math.PI*2);
+            ctx.fill();
+            ctx.strokeStyle="#4f8b61";
+            ctx.lineWidth=4;
+            ctx.stroke();
+
+            ctx.fillStyle="#3d6b43";
+            ctx.font="20px Microsoft YaHei";
+            ctx.textAlign="center";
+            ctx.fillText(Math.round(pt.v)+unit,pt.x,pt.y-16);
+
+            ctx.fillStyle="#708070";
+            ctx.font="18px Microsoft YaHei";
+            ctx.fillText(labels[i],pt.x,h-22);
+        });
+
+        ctx.fillStyle="#3d6b43";
+        ctx.font="bold 22px Microsoft YaHei";
+        ctx.textAlign="left";
+        ctx.fillText(title,padding.left,padding.top-8);
+    }
+
+    function drawBarChart(canvasId, labels, values){
+        const canvas=document.getElementById(canvasId);
+        if(!canvas) return;
+        const ctx=canvas.getContext("2d");
+        const w=canvas.width, h=canvas.height;
+        ctx.clearRect(0,0,w,h);
+        ctx.fillStyle="#fffaf0";
+        ctx.fillRect(0,0,w,h);
+
+        const padding={left:62,right:28,top:34,bottom:54};
+        const chartW=w-padding.left-padding.right;
+        const chartH=h-padding.top-padding.bottom;
+        const max=Math.max(1,...values.map(Number));
+
+        ctx.strokeStyle="rgba(112,128,112,.35)";
+        ctx.lineWidth=2;
+        ctx.beginPath();
+        ctx.moveTo(padding.left,padding.top);
+        ctx.lineTo(padding.left,h-padding.bottom);
+        ctx.lineTo(w-padding.right,h-padding.bottom);
+        ctx.stroke();
+
+        const barW=chartW/(values.length*2.6);
+        values.forEach((v,i)=>{
+            const x=padding.left+chartW*(i+.5)/values.length-barW/2;
+            const barH=Number(v)/max*chartH;
+            const y=h-padding.bottom-barH;
+
+            ctx.fillStyle=i===0?"#78b88b":"#c58b4d";
+            ctx.beginPath();
+            ctx.roundRect(x,y,barW,barH,16);
+            ctx.fill();
+
+            ctx.fillStyle="#3d6b43";
+            ctx.font="bold 26px Microsoft YaHei";
+            ctx.textAlign="center";
+            ctx.fillText(Number(v)+"次",x+barW/2,y-12);
+
+            ctx.fillStyle="#708070";
+            ctx.font="22px Microsoft YaHei";
+            ctx.fillText(labels[i],x+barW/2,h-22);
+        });
+
+        ctx.fillStyle="#3d6b43";
+        ctx.font="bold 22px Microsoft YaHei";
+        ctx.textAlign="left";
+        ctx.fillText("错误次数",padding.left,padding.top-10);
+    }
+
+    function drawCharts(records){
+        const chronological=records.slice().reverse();
+        const labels=chronological.map((r,i)=>"第"+(i+1)+"次");
+        const accData=chronological.map(r=>Number(r.acc||0));
+        const rtData=chronological.map(r=>Number(r.avg||0)).filter(v=>v>0);
+
+        drawLineChart("accChart",labels,accData,"%","正确率");
+        drawLineChart("rtChart",labels.slice(-rtData.length),rtData,"ms","平均反应");
+
+        const leftTotal=records.reduce((sum,r)=>sum+Number(r.leftWrong||0),0);
+        const rightTotal=records.reduce((sum,r)=>sum+Number(r.rightWrong||0),0);
+        drawBarChart("errorChart",["左侧错误","右侧错误"],[leftTotal,rightTotal]);
+
+        const note=document.getElementById("analysisNote");
+        if(!note) return;
+
+        if(!records.length){
+            note.innerText="完成训练后，这里会自动生成正确率趋势、反应速度趋势和左右错误分布。";
+            return;
+        }
+
+        const accTrend=getTrendText(accData,true);
+        const rtTrend=getTrendText(rtData,false);
+        let sideText="左右方向错误分布较均衡。";
+        if(leftTotal>rightTotal) sideText="左侧错误较多，后续可加强左侧方向识别训练。";
+        if(rightTotal>leftTotal) sideText="右侧错误较多，后续可加强右侧方向识别训练。";
+
+        note.innerText="AI成长分析："+accTrend+" "+rtTrend+" "+sideText;
+    }
+
+    function escapeHtml(text){
+        return String(text ?? "")
+            .replace(/&/g,"&amp;")
+            .replace(/</g,"&lt;")
+            .replace(/>/g,"&gt;")
+            .replace(/"/g,"&quot;")
+            .replace(/'/g,"&#39;");
+    }
+
+    function buildDocArchive(records){
+        const now=new Date().toLocaleString();
+        const total=records.length;
+        const validAvgRecords=records.filter(r=>Number(r.avg)>0);
+        const avgAcc=total ? Math.round(records.reduce((sum,r)=>sum+Number(r.acc||0),0)/total) : 0;
+        const bestAcc=total ? Math.max(...records.map(r=>Number(r.acc||0))) : 0;
+        const bestRt=validAvgRecords.length ? Math.min(...validAvgRecords.map(r=>Number(r.avg))) : "--";
+        const latest=records[0]||{};
+
+        const rows=records.map((r,index)=>`
+            <tr>
+                <td>${index+1}</td>
+                <td>${escapeHtml(r.date||"")}</td>
+                <td>${escapeHtml(r.name||"小朋友")}</td>
+                <td>${escapeHtml(r.mode||"")}</td>
+                <td>${escapeHtml(r.level||"")}</td>
+                <td>${escapeHtml(r.grade||"")}</td>
+                <td>${Number(r.acc||0)}%</td>
+                <td>${Number(r.avg||0)}ms</td>
+                <td>${Number(r.totalTime||0)}s</td>
+                <td>${Number(r.leftWrong||0)}</td>
+                <td>${Number(r.rightWrong||0)}</td>
+                <td>${escapeHtml(r.aiComment||"")}</td>
+            </tr>`).join("");
+
+        return `
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>果园大作战测试数据档案</title>
+<style>
+    body{font-family:"Microsoft YaHei","SimSun",sans-serif;line-height:1.6;color:#222}
+    h1{text-align:center;color:#2f6b3f}
+    h2{color:#2f6b3f;border-bottom:2px solid #8bc58b;padding-bottom:4px}
+    table{width:100%;border-collapse:collapse;margin:10px 0 18px;font-size:12px}
+    th,td{border:1px solid #999;padding:6px;vertical-align:top}
+    th{background:#e8f5df}
+    .summary td{font-size:14px}
+    .note{background:#fff8dc;border:1px solid #d6bf91;padding:10px;margin-top:12px}
+</style>
+</head>
+<body>
+<h1>果园大作战测试数据档案</h1>
+<p><b>导出时间：</b>${escapeHtml(now)}</p>
+<p><b>系统说明：</b>本档案由“果园大作战”训练系统自动生成，用于记录训练者在注意力、反应速度、方向判断和抑制控制相关任务中的表现。</p>
+
+<h2>一、数据概览</h2>
+<table class="summary">
+<tr><td><b>累计训练次数</b></td><td>${total}次</td><td><b>平均正确率</b></td><td>${avgAcc}%</td></tr>
+<tr><td><b>最高正确率</b></td><td>${bestAcc}%</td><td><b>最快反应</b></td><td>${bestRt}${bestRt==="--"?"":"ms"}</td></tr>
+<tr><td><b>最近训练等级</b></td><td>${escapeHtml(latest.grade||"--")}</td><td><b>最近训练时长</b></td><td>${latest.totalTime?latest.totalTime+"s":"--"}</td></tr>
+</table>
+
+<h2>二、测试数据明细</h2>
+<table>
+<thead>
+<tr>
+<th>序号</th><th>时间</th><th>训练者</th><th>训练模式</th><th>难度</th><th>等级</th><th>正确率</th><th>平均反应</th><th>训练时长</th><th>左错</th><th>右错</th><th>AI评价</th>
+</tr>
+</thead>
+<tbody>
+${rows || `<tr><td colspan="12" style="text-align:center">暂无训练记录</td></tr>`}
+</tbody>
+</table>
+
+<h2>三、AI综合建议</h2>
+<div class="note">
+${total ? escapeHtml(latest.aiComment||"暂无AI评价。") : "暂无训练记录，建议完成至少一次训练后再导出档案。"}
+</div>
+
+<p style="margin-top:24px;color:#666">注：本档案为训练辅助记录，可供教师、家长或研究小组参考，不作为医学诊断依据。</p>
+</body>
+</html>`;
+    }
+    function exportSingleReport(){
+        const content = `
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>果园大作战训练报告</title>
+<style>
+body{font-family:"Microsoft YaHei","SimSun",sans-serif;line-height:1.8;color:#222}
+h1{text-align:center;color:#2f6b3f}
+table{width:100%;border-collapse:collapse;margin:16px 0}
+td{border:1px solid #999;padding:10px}
+.note{background:#fff8dc;border:1px solid #d6bf91;padding:12px}
+</style>
+</head>
+<body>
+<h1>果园大作战训练报告</h1>
+<table>
+<tr><td><b>训练者</b></td><td>${rName.innerText}</td></tr>
+<tr><td><b>训练模式</b></td><td>${rMode.innerText}</td></tr>
+<tr><td><b>难度</b></td><td>${rLevel.innerText}</td></tr>
+<tr><td><b>训练等级</b></td><td>${rGrade.innerText}</td></tr>
+<tr><td><b>正确率</b></td><td>${rAcc.innerText}</td></tr>
+<tr><td><b>平均反应</b></td><td>${rAvg.innerText}</td></tr>
+<tr><td><b>训练时长</b></td><td>${rTime.innerText}</td></tr>
+<tr><td><b>左侧错误</b></td><td>${rLeft.innerText}</td></tr>
+<tr><td><b>右侧错误</b></td><td>${rRight.innerText}</td></tr>
+</table>
+<h2>AI智能评价</h2>
+<div class="note">${suggestion.innerText}</div>
+</body>
+</html>`;
+
+        const blob = new Blob(["\ufeff" + content], {
+            type:"application/msword;charset=utf-8"
+        });
+
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        const date = new Date().toISOString().slice(0,10);
+        a.href = url;
+        a.download = "果园大作战训练报告_" + date + ".doc";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+    function exportDocArchive(){
+        const records=JSON.parse(localStorage.getItem("orchardRecords")||"[]");
+        if(!records.length){
+            alert("还没有训练记录，完成一次训练后再导出测试数据档案哦。");
+            return;
+        }
+
+        const docContent=buildDocArchive(records);
+        const blob=new Blob(["\ufeff"+docContent],{type:"application/msword;charset=utf-8"});
+        const url=URL.createObjectURL(blob);
+        const a=document.createElement("a");
+        const date=new Date().toISOString().slice(0,10);
+        a.href=url;
+        a.download="果园大作战测试数据档案_"+date+".doc";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    function clearRecords(){
+        localStorage.removeItem("orchardRecords");
+        updateHomeCount();
+        openRecords();
+    }
+
+    function speak(text){
+        if("speechSynthesis" in window){
+            speechSynthesis.cancel();
+
+            const msg=new SpeechSynthesisUtterance(text);
+            const voices=speechSynthesis.getVoices();
+
+            const zhVoice =
+                voices.find(v => v.lang==="zh-CN" && /mandarin|普通话|xiaoxiao|huihui|yaoyao|tingting|hanhan/i.test(v.name)) ||
+                voices.find(v => v.lang==="zh-CN") ||
+                voices.find(v => v.lang && v.lang.toLowerCase().startsWith("zh"));
+
+            if(zhVoice){
+                msg.voice=zhVoice;
+            }
+
+            msg.lang="zh-CN";
+            msg.rate=0.78;
+            msg.pitch=1;
+            msg.volume=1;
+
+            speechSynthesis.speak(msg);
+        }
+    }
+
+    if("speechSynthesis" in window){
+        speechSynthesis.onvoiceschanged=()=>{
+            speechSynthesis.getVoices();
+        };
+    }
+
+    updateHomeCount();
+
+    document.addEventListener("keydown",e=>{
+        if(e.key==="ArrowLeft"||e.key.toLowerCase()==="a")answer("left");
+        if(e.key==="ArrowRight"||e.key.toLowerCase()==="d")answer("right");
+    });
+</script>
+</body>
+</html>
